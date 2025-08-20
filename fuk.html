@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quizlet Paste → Export Tool (v2)</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(45deg, #4834d4, #686de0);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+            margin-bottom: 15px;
+        }
+
+        .features {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .feature {
+            background: rgba(255,255,255,0.2);
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 0.9em;
+            backdrop-filter: blur(10px);
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            padding: 30px;
+        }
+
+        .input-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            border-left: 5px solid #4834d4;
+        }
+
+        .output-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            border-left: 5px solid #00d2d3;
+        }
+
+        .section-title {
+            font-size: 1.4em;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .textarea {
+            width: 100%;
+            height: 300px;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            resize: vertical;
+            transition: border-color 0.3s ease;
+        }
+
+        .textarea:focus {
+            outline: none;
+            border-color: #4834d4;
+            box-shadow: 0 0 10px rgba(72, 52, 212, 0.2);
+        }
+
+        .controls {
+            margin: 20px 0;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .mode-select {
+            padding: 10px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+            background: white;
+            cursor: pointer;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #4834d4, #686de0);
+            color: white;
+        }
+
+        .btn-success {
+            background: linear-gradient(45deg, #00d2d3, #0fb9b1);
+            color: white;
+        }
+
+        .btn-warning {
+            background: linear-gradient(45deg, #ff9ff3, #f368e0);
+            color: white;
+        }
+
+        .btn-danger {
+            background: linear-gradient(45deg, #ff3838, #ff4757);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        }
+
+        .btn:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .preview-area {
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            padding: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+        }
+
+        .stats {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            text-align: center;
+        }
+
+        .stat-item {
+            background: rgba(255,255,255,0.2);
+            padding: 10px;
+            border-radius: 8px;
+            backdrop-filter: blur(10px);
+        }
+
+        .stat-number {
+            font-size: 1.8em;
+            font-weight: bold;
+            display: block;
+        }
+
+        .threshold-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .threshold-input {
+            width: 60px;
+            padding: 5px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .help-text {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 0.9em;
+            color: #1565c0;
+            border-left: 4px solid #2196f3;
+        }
+
+        .format-info {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 0.9em;
+            color: #856404;
+            border-left: 4px solid #ffc107;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .features {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 Quizlet Paste → Export Tool (v2)</h1>
+            <p>Chuyển nhanh nội dung Quizlet thành JSON database cho auto-tool quét đáp án</p>
+            <div class="features">
+                <div class="feature">🤖 Auto-detect đáp án</div>
+                <div class="feature">📊 term + answer format</div>
+                <div class="feature">🎯 Database cho quét</div>
+                <div class="feature">📝 Generate exam HTML</div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <!-- Input Section -->
+            <div class="input-section">
+                <div class="section-title">
+                    📝 Input - Paste nội dung Quizlet
+                </div>
+                
+                <div class="help-text">
+                    <strong>Cách dùng:</strong> Copy toàn bộ nội dung từ Quizlet và paste vào đây. Tool sẽ tự động phát hiện đáp án đúng (những dòng xuất hiện ≥2 lần).
+                </div>
+
+                <div class="format-info">
+                    <strong>📋 Output Format:</strong><br>
+                    • <strong>term:</strong> câu hỏi + tất cả đáp án<br>
+                    • <strong>answer:</strong> chỉ đáp án đúng<br>
+                    → Tối ưu cho auto-tool quét tìm đáp án
+                </div>
+
+                <textarea 
+                    id="inputText" 
+                    class="textarea" 
+                    placeholder="Paste nội dung Quizlet hoặc Q&A ở đây...
+
+Ví dụ:
+1. Thủ đô của Việt Nam là gì?
+A. Hồ Chí Minh
+B. Hà Nội
+C. Đà Nẵng
+
+2. CSS dùng để làm gì?
+A. Lập trình logic
+B. Styling cho web
+C. Xử lý server
+
+Đáp án:
+1. B. Hà Nội
+2. B. Styling cho web"></textarea>
+
+                <div class="controls">
+                    <label>
+                        <strong>Chế độ tách:</strong>
+                        <select id="splitMode" class="mode-select">
+                            <option value="auto">Auto (thông minh)</option>
+                            <option value="blank-line">Blank-line (dòng trắng)</option>
+                            <option value="per-question">Per-question (từng câu)</option>
+                        </select>
+                    </label>
+                    
+                    <div class="threshold-control">
+                        <label><strong>Ngưỡng đáp án đúng:</strong></label>
+                        <input type="number" id="threshold" class="threshold-input" value="2" min="1" max="10">
+                        <span>lần</span>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary" onclick="processData()">
+                    ⚡ Process Data
+                </button>
+                
+                <button class="btn btn-success" onclick="loadSampleData()" style="margin-top: 10px;">
+                    📘 Load Sample Data
+                </button>
+            </div>
+
+            <!-- Output Section -->
+            <div class="output-section">
+                <div class="section-title">
+                    📊 Output - Database JSON
+                </div>
+
+                <div id="stats" class="stats" style="display: none;">
+                    <div class="stat-item">
+                        <span class="stat-number" id="totalQuestions">0</span>
+                        <span>Câu hỏi</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number" id="correctAnswers">0</span>
+                        <span>Đáp án đúng</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number" id="detectedMode">-</span>
+                        <span>Chế độ</span>
+                    </div>
+                </div>
+
+                <div class="controls">
+                    <button class="btn btn-success" onclick="copyJSON()" id="copyBtn" disabled>
+                        📋 Copy JSON
+                    </button>
+                    <button class="btn btn-primary" onclick="downloadDatabase()" id="downloadBtn" disabled>
+                        💾 Download Database
+                    </button>
+                    <button class="btn btn-warning" onclick="generateExamHTML()" id="examBtn" disabled>
+                        📝 Generate to Exam
+                    </button>
+                    <button class="btn btn-danger" onclick="clearData()" id="clearBtn" disabled>
+                        🗑️ Clear
+                    </button>
+                </div>
+
+                <div id="jsonPreview" class="preview-area">
+                    Chưa có dữ liệu. Paste nội dung và bấm Process để bắt đầu...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let databaseData = [];
+
+        function processData() {
+            const inputText = document.getElementById('inputText').value.trim();
+            const splitMode = document.getElementById('splitMode').value;
+            const threshold = parseInt(document.getElementById('threshold').value);
+
+            if (!inputText) {
+                alert('Vui lòng paste nội dung vào ô input!');
+                return;
+            }
+
+            try {
+                // Remove answer-key section for splitting, but keep original text for correctness detection
+                const textForQuestions = removeAnswerKeySection(inputText);
+
+                // Detect and split questions
+                const { questions, usedMode } = splitIntoQuestions(textForQuestions, splitMode);
+                
+                // Find correct answers
+                const allLines = inputText.split('\n').map(line => line.trim()).filter(line => line);
+                const lineCounts = countLines(allLines);
+                const correctAnswers = findCorrectAnswers(lineCounts, threshold);
+
+                // Process each question
+                databaseData = [];
+
+                questions.forEach(questionBlock => {
+                    const processed = processQuestion(questionBlock, correctAnswers);
+                    if (processed) {
+                        databaseData.push(processed);
+                    }
+                });
+
+                // Update UI
+                const withAnswerCount = databaseData.filter(item => item.answer && item.answer.trim()).length;
+                updateStats(questions.length, withAnswerCount, usedMode);
+                displayResults();
+                enableButtons();
+
+            } catch (error) {
+                alert('Lỗi xử lý dữ liệu: ' + error.message);
+                console.error(error);
+            }
+        }
+
+        function removeAnswerKeySection(text) {
+            const lines = text.split('\n');
+            const idx = lines.findIndex(line => /^\s*đáp\s*án\s*:*/i.test(line.trim()));
+            if (idx >= 0) {
+                return lines.slice(0, idx).join('\n');
+            }
+            return text;
+        }
+
+        function splitIntoQuestions(text, mode) {
+            const lines = text.split('\n');
+            let usedMode = mode;
+            
+            if (mode === 'auto') {
+                usedMode = detectBestMode(text);
+            }
+            
+            let questions;
+            if (usedMode === 'blank-line') {
+                questions = splitByBlankLine(text);
+            } else if (usedMode === 'per-question') {
+                questions = splitPerQuestion(lines);
+            } else {
+                questions = splitByBlankLine(text); // fallback
+            }
+            
+            return { questions, usedMode };
+        }
+
+        function detectBestMode(text) {
+            const lines = text.split('\n').filter(line => line.trim());
+            
+            // Check for numbered questions
+            const numberedQuestions = lines.filter(line => 
+                /^\d+\./.test(line.trim()) || line.trim().endsWith('?')
+            ).length;
+            
+            // Check for blank line separators
+            const blankLines = text.split('\n\n').filter(block => block.trim()).length;
+            
+            if (numberedQuestions >= 2) {
+                return 'per-question';
+            } else if (blankLines >= 2) {
+                return 'blank-line';
+            }
+            
+            return 'per-question';
+        }
+
+        function splitByBlankLine(text) {
+            return text.split(/\n\s*\n/).filter(block => block.trim());
+        }
+
+        function splitPerQuestion(lines) {
+            const questions = [];
+            let currentQuestion = [];
+            
+            for (let line of lines) {
+                line = line.trim();
+                if (!line) continue;
+                
+                // Check if this line starts a new question
+                if (isQuestionStart(line) && currentQuestion.length > 0) {
+                    questions.push(currentQuestion.join('\n'));
+                    currentQuestion = [line];
+                } else {
+                    currentQuestion.push(line);
+                }
+            }
+            
+            if (currentQuestion.length > 0) {
+                questions.push(currentQuestion.join('\n'));
+            }
+            
+            return questions;
+        }
+
+        function isQuestionStart(line) {
+            return /^\d+\./.test(line) || 
+                   line.endsWith('?') || 
+                   /^(Câu|Question)\s*\d+/i.test(line);
+        }
+
+        function countLines(lines) {
+            const counts = new Map();
+            lines.forEach(line => {
+                if (line) {
+                    counts.set(line, (counts.get(line) || 0) + 1);
+                }
+            });
+            return counts;
+        }
+
+        function findCorrectAnswers(lineCounts, threshold) {
+            const correctAnswers = new Set();
+            lineCounts.forEach((count, line) => {
+                if (count >= threshold) {
+                    correctAnswers.add(line);
+                }
+            });
+            return correctAnswers;
+        }
+
+        function processQuestion(questionBlock, correctAnswers) {
+            const lines = questionBlock.split('\n').map(line => line.trim()).filter(line => line);
+            if (lines.length === 0) return null;
+
+            // Determine question line and option lines
+            const questionLine = normalizeQuestionText(lines[0]);
+            const optionLines = lines.slice(1).filter(l => l);
+
+            // Extract and deduplicate options
+            const dedupedOptions = [];
+            const seen = new Set();
+            optionLines.forEach(line => {
+                const { label, text, labeled } = extractOptionParts(line);
+                const normalized = normalizeOptionText(text);
+                if (!normalized) return;
+                if (seen.has(normalized)) return;
+                seen.add(normalized);
+                const effectiveLabel = label || String.fromCharCode(65 + dedupedOptions.length); // A, B, C...
+                const effectiveLabeled = effectiveLabel ? effectiveLabel + '. ' + text : text;
+                dedupedOptions.push({ label: effectiveLabel, text, labeled: effectiveLabeled, normalized });
+            });
+
+            // Fallback: if no options parsed, keep original block as term
+            if (dedupedOptions.length === 0) {
+                const correctInQuestion = lines.find(line => correctAnswers.has(line)) || '';
+                return { term: questionBlock.trim(), answer: correctInQuestion };
+            }
+
+            // Detect correct option among deduped options
+            let detectedAnswer = '';
+            for (const opt of dedupedOptions) {
+                const candidates = [
+                    opt.labeled,
+                    opt.text,
+                    opt.label ? opt.label + ')' + ' ' + opt.text : '',
+                    opt.label ? opt.label + ' ' + opt.text : ''
+                ].filter(Boolean);
+                if (candidates.some(c => correctAnswers.has(c))) {
+                    detectedAnswer = opt.labeled;
+                    break;
+                }
+            }
+
+            // Reconstruct term as: question + A./B./C. unique choices
+            const term = [questionLine]
+                .concat(dedupedOptions.map(o => o.label + '. ' + o.text))
+                .join('\n');
+
+            return { term, answer: detectedAnswer };
+        }
+
+        function normalizeQuestionText(line) {
+            return line.replace(/^\s*\d+\s*[\).]?\s*/, '').trim();
+        }
+
+        function normalizeOptionText(text) {
+            return text.replace(/\s+/g, ' ').trim().toLowerCase();
+        }
+
+        function extractOptionParts(line) {
+            const trimmed = line.trim();
+            const labelMatch = /^(?:([A-Da-d])[\s\.)\-:]+)(.*)$/.exec(trimmed);
+            if (labelMatch) {
+                const label = labelMatch[1].toUpperCase();
+                const text = labelMatch[2].trim();
+                return { label, text, labeled: label + '. ' + text };
+            }
+            // No explicit label, treat entire line as option text; label will be assigned sequentially
+            return { label: '', text: trimmed, labeled: trimmed };
+        }
+
+        function updateStats(totalQuestions, correctAnswersCount, mode) {
+            document.getElementById('totalQuestions').textContent = totalQuestions;
+            document.getElementById('correctAnswers').textContent = correctAnswersCount;
+            document.getElementById('detectedMode').textContent = mode;
+            document.getElementById('stats').style.display = 'block';
+        }
+
+        function displayResults() {
+            const jsonPreview = document.getElementById('jsonPreview');
+            jsonPreview.textContent = JSON.stringify(databaseData, null, 2);
+        }
+
+        function enableButtons() {
+            document.getElementById('copyBtn').disabled = false;
+            document.getElementById('downloadBtn').disabled = false;
+            document.getElementById('examBtn').disabled = false;
+            document.getElementById('clearBtn').disabled = false;
+        }
+
+        function copyJSON() {
+            const jsonText = JSON.stringify(databaseData, null, 2);
+            navigator.clipboard.writeText(jsonText).then(() => {
+                const btn = document.getElementById('copyBtn');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '✅ Đã copy!';
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                }, 2000);
+            }).catch(err => {
+                console.error('Lỗi copy:', err);
+                alert('Không thể copy. Vui lòng copy thủ công từ preview area.');
+            });
+        }
+
+        function downloadDatabase() {
+            downloadJSON(databaseData, 'quizlet_database.json');
+        }
+
+        function downloadJSON(data, filename) {
+            const jsonText = JSON.stringify(data, null, 2);
+            const blob = new Blob([jsonText], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function generateExamHTML() {
+            if (databaseData.length === 0) {
+                alert('Không có dữ liệu để tạo exam!');
+                return;
+            }
+
+            const examHTML = createExamHTML(databaseData);
+            downloadHTML(examHTML, 'quizlet_exam.html');
+        }
+
+        function createExamHTML(data) {
+            const timestamp = new Date().toLocaleString('vi-VN');
+            
+            function escapeHtml(str) {
+                if (typeof str !== 'string') return '';
+                return str.replace(/[&<>"']/g, function(ch) {
+                    const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+                    return map[ch] || ch;
+                });
+            }
+
+            return `<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quizlet Exam - ${timestamp}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(45deg, #4834d4, #686de0);
+            color: white;
+            padding: 25px;
+            text-align: center;
+        }
+        .header h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+        .content {
+            padding: 30px;
+        }
+        .question-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 5px solid #4834d4;
+        }
+        .question-number {
+            background: #4834d4;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            display: inline-block;
+            margin-bottom: 15px;
+        }
+        .question-text {
+            font-size: 1.1em;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            white-space: pre-line;
+        }
+        .answer-section {
+            background: #d4edda;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #28a745;
+        }
+        .answer-label {
+            font-weight: bold;
+            color: #155724;
+            margin-bottom: 8px;
+        }
+        .answer-text {
+            color: #155724;
+            font-weight: 500;
+            white-space: pre-line;
+        }
+        .stats {
+            background: #e9ecef;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📚 Quizlet Exam</h1>
+            <p>Tạo ngày: ${timestamp}</p>
+        </div>
+        <div class="content">
+            <div class="stats">
+                <strong>📊 Tổng số câu hỏi: ${data.length}</strong>
+            </div>
+            
+            ${data.map((item, index) => `
+                <div class="question-card">
+                    <div class="question-number">Câu ${index + 1}</div>
+                    <div class="question-text">${escapeHtml(item.term)}</div>
+                    <div class="answer-section">
+                        <div class="answer-label">✅ Đáp án đúng:</div>
+                        <div class="answer-text">${escapeHtml(item.answer || 'Không xác định')}</div>
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+    </div>
+</body>
+</html>`;
+        }
+
+        function downloadHTML(content, filename) {
+            const blob = new Blob([content], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function clearData() {
+            document.getElementById('inputText').value = '';
+            databaseData = [];
+            document.getElementById('jsonPreview').textContent = 'Đã xóa dữ liệu. Paste nội dung mới để bắt đầu...';
+            document.getElementById('stats').style.display = 'none';
+            disableButtons();
+        }
+
+        function disableButtons() {
+            document.getElementById('copyBtn').disabled = true;
+            document.getElementById('downloadBtn').disabled = true;
+            document.getElementById('examBtn').disabled = true;
+            document.getElementById('clearBtn').disabled = true;
+        }
+
+        function loadSampleData() {
+            const sampleText = `1. Thủ đô của Việt Nam là gì?
+A. Hồ Chí Minh
+B. Hà Nội
+C. Đà Nẵng
+D. Cần Thơ
+
+2. Ngôn ngữ lập trình nào được sử dụng cho web frontend?
+A. Python
+B. JavaScript
+C. Java
+D. C++
+
+3. HTML là viết tắt của gì?
+A. Hypertext Markup Language
+B. High Tech Modern Language
+C. Home Tool Markup Language
+D. Hypertext Modern Language
+
+4. CSS dùng để làm gì?
+A. Lập trình logic
+B. Tạo cơ sở dữ liệu
+C. Styling cho web
+D. Xử lý server
+
+5. React là gì?
+A. Thư viện JavaScript
+B. Ngôn ngữ lập trình
+C. Database
+D. Server
+
+Đáp án:
+1. B. Hà Nội
+2. B. JavaScript
+3. A. Hypertext Markup Language
+4. C. Styling cho web
+5. A. Thư viện JavaScript
+
+B. Hà Nội
+B. JavaScript
+A. Hypertext Markup Language
+C. Styling cho web
+A. Thư viện JavaScript`;
+
+            document.getElementById('inputText').value = sampleText;
+        }
+    </script>
+</body>
+</html>
