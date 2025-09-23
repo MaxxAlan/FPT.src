@@ -57,9 +57,7 @@
   {
     "username": "nguyenduyanhkhoi1809@gmail.com",
     "password": "coursera",
-    "link": [
-      "https://coursera.org/share/bea047b5856dbc15949bb45ab8282c1f"
-    ]
+    "link": "https://coursera.org/share/bea047b5856dbc15949bb45ab8282c1f"
   },
   {
     "username": "ledat2452@gmail.com",
@@ -130,5 +128,10 @@
     "username": "eunae1942006@gmail.com",
     "password": "coursera",
     "link": "https://www.coursera.org/account/accomplishments/specialization/7QRM8O5JP9KT"
+  },
+  {
+    "username": "nguyengiahuy2112006@gmail.com",
+    "password": "coursera",
+    "link": "https://coursera.org/share/7e9fcb1d5a9c5590539964928769cd1a"
   }
 ]
